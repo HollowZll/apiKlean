@@ -5,7 +5,9 @@ const koders = require('../usecases/koders.usecase')
 // List of koders using the Get method. 
 router.get ('/', async (request, response) => {
     try{
-    const allKoders =  await koders.getAll()
+        //gets info from the url
+    const titleFilter = request.query.title;
+    const allKoders =  await koders.getAll(titleFilter)
     response.json( {
         message: 'Koder list',
         data: {
@@ -104,11 +106,12 @@ router.patch ('/:id', async(request, response) => {
         },
        })
     } catch (error) {
-        response.status(error.status || 500);
+        const status = error.name === 'ValidationError' ? 400 : 500
+        response.status(error.status || status);
         response.json({
             message: 'ooooooops',
             error: error.message,
-        })
+        });
     }
 })
 

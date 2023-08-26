@@ -1,16 +1,22 @@
 const mongoose = require('mongoose');
 const Practice = require('../models/practice.model');
 const createError = require ('http-errors');
+const Koder = require ('../models/koders.models')
 
 // get all 
 async function getAllPractice() {
-    const allPractice = await Practice.findOne(); 
+    //populate makes reference to the model shceme part ref
+    const allPractice = await Practice.find().populate('koder'); 
+    return allPractice;
 };
 
 // create 
 
 async function createProgram (practiceData) {
     const newPractice = await Practice.create(practiceData);
+    if(!mongoose.isValidObjectId(practiceData.koder)) {
+        throw new createError(400, 'Invalid koder ID')
+    };
     return newPractice;
 }
 
@@ -44,8 +50,17 @@ async function deleteByID (id) {
 async function updateByID(id, dataToUpdate) {
     if (!mongoose.isValidObjectId(id)) {
         throw new createError(400, 'Invalid ID');
-
     };
+
+    if (dataToUpdate.koder) {
+        if(!mongoose.isValidObjectId(dataToUpdate.koder)) {
+            throw new createError(400, 'Invalid koder ID')
+        }
+        const koder = await Koder.findById(dataToUpdate.koder);
+        if (!koder) {
+            throw new createError(404, "Koder not found")
+        }
+    }
     const practicaUpdated = await Practice.findByIdAndUpdate(id, dataToUpdate);
     if (!practicaUpdated) {
         throw new createError (404, 'Invalit info')

@@ -9,12 +9,17 @@ const practiceShema = new mongoose.Schema({
         required: true,
         match: /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)/,
     },
-    // koder: {
-    // //     // type: mongoose.SchemaType.ObjectId,
-    // //     required: true,
-    // //     trim: true,
-    // //     ref: 'koder'
-    // },
+    koder: {
+        type: mongoose.SchemaTypes.ObjectId,
+        required: true,
+        trim: true,
+        ref: 'koder'
+    },
+    created: {
+        type: Date,
+        required: true,
+        default: new Date(),
+    },
 
 });
 

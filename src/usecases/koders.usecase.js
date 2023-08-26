@@ -1,24 +1,33 @@
 const mongoose  = require('mongoose');
 const Koder = require('../models/koders.models');
 const createError = require ('http-errors')
+const bcrypt = require ('../lib/bcrypt');
 
 //get all
-async function getAll() {
-    const allKoders =  await Koder.find();
+async function getAll(tittleFilter) {
+    const allKoders =  await Koder.find()
     return allKoders;
 };
-// create 
+
+// CREATE 
 async function create (koderData) {
-    // //save an object of koder to memory.
-    // const newKoder = await new Koder(koderData);
-    // // validation of koders, if an error we send it
-    // const isValid = newKoder.validateSync();
-    // //error validation and message; 
-    // if(isValid) {
-    //     throw new Error ("Invalid koder");
-    // }
-    // // save if the koder is valid
-    // await newKoder.save();
+    // validar si el koder ya existe 
+    const existingKoder = await Koder.findOne ({ email: koderData.email });
+    if (existingKoder) {
+        throw new createError(412, 'Email ya usado')
+    };
+    //validar the password (weak)
+    const passwordRegex = new RegExp(
+        "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$"
+    );
+    if (!passwordRegex.test(koderData.password)) {
+        throw new createError(400, 'Password to weak')
+    }
+
+    // guardar password encriptado 1. koderdata accedimos a password usamos funcion encrypt, to finish it. 
+     
+    koderData.password = bcrypt.encrypt(koderData.password)
+
     const newKoder = await Koder.create(koderData);
     return newKoder;
 };
@@ -49,7 +58,10 @@ async function updateByID(id, dataToUpdate) {
         throw new createError(400, 'Invalid ID');
     };
 
-    const koderUpdated = await Koder.findByIdAndUpdate(id, dataToUpdate);
+    const koderUpdated = await Koder.findByIdAndUpdate(id, dataToUpdate, {
+        new: true,
+        runValidators: true
+    });
     if (!koderUpdated){
         throw  new createError(404, 'Invalid info or koder not found');
     }

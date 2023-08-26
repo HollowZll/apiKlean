@@ -1,6 +1,7 @@
 const express = require('express');
 const pRouter = express.Router();
 const practices = require('../usecases/practice.usecases')
+const Koder = require('../models/koders.models');
 
 
 //list all
@@ -34,14 +35,21 @@ pRouter.post ('/', async (request, response) => {
         data: {
           practica: newPractice,
         }
-      })
+      });
+      // validar que id del koder si existe
     } catch (error) {
         const status = error.name === 'ValidationError' ? 400 : 500
-        response.status(status);
+        response.status(error.status || status);
         response.json({
             message: 'Double oops',
             error: error.message,
-        })
+        });
+
+        // validart que el koder existe
+
+        if (!koder) {
+            throw new createError(404, 'Koder Not Found')
+        }
     }
 });
 
